@@ -43,13 +43,13 @@ tube3_pass = False
 
 pausing = False
 
-bird_image = pygame.image.load("bird.png")
+bird_image = pygame.image.load("Pygame/Flappy Bird/bird.png")
 bird_image = pygame.transform.scale(bird_image,(BIRD_WIDTH,BIRD_HEIGHT))
 
-background_image = pygame.image.load("background.png")
+background_image = pygame.image.load("Pygame/Flappy Bird/background.png")
 background_image = pygame.transform.scale(background_image,(WIDTH,HEIGHT))
 
-tube_image = pygame.image.load("tube.png")
+tube_image = pygame.image.load("Pygame/Flappy Bird/tube.png")
 tube_image = pygame.transform.scale(tube_image,(TUBE_WIDTH,HEIGHT - TUBE_GAP - tube1_height))
 
 while running:
