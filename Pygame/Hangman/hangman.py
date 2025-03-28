@@ -25,28 +25,34 @@ wordBoxLength = 80
 # Game variables
 words = ["PYTHON", "JAVA", "JAVASCRIPT", "RUBY", "PHP", "HTML", "CSS"]
 word = random.choice(words)
-guessed = ["A"]
+guessed = []
 correct = 0
 flag = 0
-chances = len(word) + 3
+chances = 3
 
 label_x = 200
 
+# Alphabet box
 alphatbet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 alphaBoxX = 700
 alphaBoxY = 20
 alphaBoxWidth = 150
 alphaBoxHeight = 200
 
-
-
+# Alphabet button
 alphaLetterBox = 20
 alphaButtonGap = 6
 total_box_width = 4 * alphaLetterBox + 3 * alphaButtonGap
 total_box_length = 7 * alphaLetterBox + 6 * alphaButtonGap
+alphabet_button = {}
+
+# wheel
+wheelRadius = 100
+wheelX = 150
+wheelY = 150
 
 
-font = pygame.font.SysFont("arial", 40)
+font = pygame.font.SysFont("arial", 80)
 font_small = pygame.font.SysFont("arial", 20)
 
 # Main game loop
@@ -55,6 +61,27 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if(event.button == 1):
+                pygame.mixer.pause()
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                for letter, rect in alphabet_button.items():
+                    if rect.collidepoint(mouse_x, mouse_y):
+                        print(f"Cliked on {letter}")
+                        if letter in guessed:
+                            continue
+                        if letter in word:
+                            guessed.append(letter)
+                        else:
+                            guessed.append(letter)
+                            chances -= 1
+                            print(f"Chances left: {chances}")
+                            if chances == 0:
+                                print("You lost")
+                                running = False
+                        break
+                        
+                    
             
 
     # Game logic here
@@ -67,16 +94,19 @@ while running:
     screen.fill(GREY)
 
     
-    # Calculate total width of all dashlines and spaces
+    # Calculate total width of all boxes and spaces
     total_dashline_width = len(word) * wordBoxWidth + (len(word) - 1) * 15
 
-    # Calculate starting x-coordinate to center the dashlines
+    # Calculate starting x-coordinate to center the boxes
     start_x = (WIDTH - total_dashline_width) / 2.0
 
-    # Draw dashlines for each letter in the word
-    for _ in word:
+    # Draw box for each letter in the word
+    for box in word:
         pygame.draw.rect(screen, WHITE, (start_x, 400, wordBoxWidth, wordBoxLength))
-        start_x += wordBoxWidth + 20  # Move to the next dashline position
+        if box in guessed:
+            text = font.render(box, True, BLACK)
+            screen.blit(text, (start_x+2.5, 400))
+        start_x += wordBoxWidth + 20  # Move to the next box position
         
     # display guessed letters
     label = font_small.render("Guessed: ", True, WHITE)
@@ -94,9 +124,14 @@ while running:
     for i in range(26):
         x = start_x_button + (i % 4) * (alphaLetterBox + alphaButtonGap)
         y = start_y_button + (i // 4) * (alphaLetterBox + alphaButtonGap)
-        pygame.draw.rect(screen, BLACK, (x, y, alphaLetterBox, alphaLetterBox))
+        rect = pygame.Rect(x, y, alphaLetterBox, alphaLetterBox)
+        alphabet_button[alphatbet[i]] = rect
+        pygame.draw.rect(screen, BLACK, rect)
         letter = font_small.render(alphatbet[i], True, WHITE)
         screen.blit(letter, (x, y))
+        
+    # Draw wheel
+    pygame.draw.circle(screen, BLACK, (wheelX, wheelY), wheelRadius)
     
 
     # Update the display
