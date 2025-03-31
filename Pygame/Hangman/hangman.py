@@ -16,6 +16,7 @@ BLACK = (0, 0, 0)
 GREY = (128, 128, 128)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
+PASTEL_BLUE = (186,225, 255)
 
 # Clock for controlling the frame rate
 clock = pygame.time.Clock()
@@ -28,7 +29,7 @@ wordBoxLength = 80
 # Game variables
 words = ["PYTHON", "JAVAA", "JAVASCRIPT", "RUBY", "PHP", "HTML", "CSS"]
 word = random.choice(words)
-guessed = []
+clicked_buttons = []
 correct = 0
 flag = 0
 chances = 3
@@ -37,7 +38,7 @@ PI = 3.14
 label_x = 200
 
 # Alphabet letters
-alphatbet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 # Alphabet button
 alphaLetterBox = 50
@@ -120,13 +121,15 @@ while running:
 
                 for letter, rect in alphabet_button.items():
                     if rect.collidepoint(mouse_x, mouse_y):
-                        print(f"Cliked on {letter}")
-                        if letter in guessed:
+                        if letter in clicked_buttons:
                             continue
+                        
+                        clicked_buttons.append(letter)
+                        
                         if letter in word:
-                            guessed.append(letter)
+                            clicked_buttons.append(letter)
                         else:
-                            guessed.append(letter)
+                            clicked_buttons.append(letter)
                             chances -= 1
                             print(f"Chances left: {chances}")
                             if chances == 0:
@@ -140,7 +143,7 @@ while running:
     clock.tick(FPS)
 
     # Drawing code here
-    screen.fill(GREY)
+    screen.fill(PASTEL_BLUE)
 
     # Calculate total width of all boxes and spaces
     total_word_width = len(word) * wordBoxWidth + (len(word) - 1) * 15
@@ -153,7 +156,7 @@ while running:
     for box in word:
         pygame.draw.rect(screen, WHITE, (start_x, start_y,
                          wordBoxWidth, wordBoxLength),border_radius=10)
-        if box in guessed:
+        if box in clicked_buttons:
             text = font.render(box, True, BLACK)
             text_box_width, text_box_height = text.get_size()
             # Center the letter in the box
@@ -170,11 +173,32 @@ while running:
         x = start_x_button + (i % 7) * (alphaLetterBox + alphaButtonGap)
         y = start_y_button + (i // 7) * (alphaLetterBox + alphaButtonGap)
         rect = pygame.Rect(x, y, alphaLetterBox, alphaLetterBox)
-        alphabet_button[alphatbet[i]] = rect
-        pygame.draw.rect(screen, BLACK, rect, border_radius=10)
-        pygame.draw.rect(screen, WHITE, rect, 2, border_radius=10)
-        letter = font_small.render(alphatbet[i], True, WHITE)
+        alphabet_button[alphabet[i]] = rect
         
+        # check if the button has been clicked
+        if alphabet[i] in clicked_buttons:
+            transparent_surface = pygame.Surface(
+                            (alphaLetterBox, alphaLetterBox), pygame.SRCALPHA)
+
+            # Draw the button with transparency
+            pygame.draw.rect(transparent_surface, GREY, (0, 0,
+                            alphaLetterBox, alphaLetterBox), border_radius=10)
+            # Draw the letter inside the button
+            letter = font_small.render(alphabet[i], True, WHITE)
+            text_width, text_height = letter.get_size()
+            # Center the letter in the box
+            x = (alphaLetterBox - text_width) / 2
+            y = (alphaLetterBox - text_height) / 2
+            # Draw the letter
+            transparent_surface.blit(letter, (x, y))
+            # Draw the transparent surface on the screen
+            screen.blit(transparent_surface, (rect.x, rect.y))
+        else: 
+            pygame.draw.rect(screen, BLACK, rect, border_radius=10)
+            pygame.draw.rect(screen, WHITE, rect, 2, border_radius=10)
+        
+        # Draw the letter inside the button
+        letter = font_small.render(alphabet[i], True, WHITE)
         text_width, text_height = letter.get_size()
         # Center the letter in the box
         x = rect.x + (alphaLetterBox - text_width) / 2
