@@ -147,14 +147,19 @@ while running:
 
     # Calculate starting x-coordinate to center the boxes
     start_x = (WIDTH - total_word_width) / 2.0
+    start_y = 450
 
     # Draw box for each letter in the word
     for box in word:
-        pygame.draw.rect(screen, WHITE, (start_x, 450,
-                         wordBoxWidth, wordBoxLength))
+        pygame.draw.rect(screen, WHITE, (start_x, start_y,
+                         wordBoxWidth, wordBoxLength),border_radius=10)
         if box in guessed:
             text = font.render(box, True, BLACK)
-            screen.blit(text, (start_x+3, 400))
+            text_box_width, text_box_height = text.get_size()
+            # Center the letter in the box
+            x_box = start_x + (wordBoxWidth - text_box_width) / 2
+            y_box = start_y + (wordBoxLength - text_box_height) / 2
+            screen.blit(text, (x_box, y_box))
         start_x += wordBoxWidth + 20  # Move to the next box position
 
 
