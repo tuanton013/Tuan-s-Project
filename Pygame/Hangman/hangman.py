@@ -26,7 +26,7 @@ wordBoxWidth = 60
 wordBoxLength = 80
 
 # Game variables
-words = ["PYTHON", "JAVA", "JAVASCRIPT", "RUBY", "PHP", "HTML", "CSS"]
+words = ["PYTHON", "JAVAA", "JAVASCRIPT", "RUBY", "PHP", "HTML", "CSS"]
 word = random.choice(words)
 guessed = []
 correct = 0
@@ -36,12 +36,8 @@ PI = 3.14
 
 label_x = 200
 
-# Alphabet box
+# Alphabet letters
 alphatbet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-alphaBoxX = 800
-alphaBoxY = 80
-alphaBoxWidth = 150
-alphaBoxHeight = 200
 
 # Alphabet button
 alphaLetterBox = 50
@@ -68,7 +64,7 @@ spin_start_time = 0
 spin_duration = 0
 
 font = pygame.font.SysFont("arial", 80)
-font_small = pygame.font.SysFont("arial", 20)
+font_small = pygame.font.SysFont("arial", 25)
 
 # heart object
 heart_image = pygame.image.load("heart.png")
@@ -147,28 +143,23 @@ while running:
     screen.fill(GREY)
 
     # Calculate total width of all boxes and spaces
-    total_box_width = len(word) * wordBoxWidth + (len(word) - 1) * 15
+    total_word_width = len(word) * wordBoxWidth + (len(word) - 1) * 15
 
     # Calculate starting x-coordinate to center the boxes
-    start_x = (WIDTH - total_box_width) / 2.0
+    start_x = (WIDTH - total_word_width) / 2.0
 
     # Draw box for each letter in the word
     for box in word:
-        pygame.draw.rect(screen, WHITE, (start_x, 400,
+        pygame.draw.rect(screen, WHITE, (start_x, 450,
                          wordBoxWidth, wordBoxLength))
         if box in guessed:
             text = font.render(box, True, BLACK)
             screen.blit(text, (start_x+3, 400))
         start_x += wordBoxWidth + 20  # Move to the next box position
 
-    # display guessed letters
-    label = font_small.render("Guessed: ", True, WHITE)
-    screen.blit(label, (label_x, 550))
-    text = font_small.render(" ".join(guessed), True, WHITE)
-    screen.blit(text, (label_x + 100, 550))
 
-    start_x_button = ((alphaBoxWidth - total_box_width) / 2.0) + alphaBoxX
-    start_y_button = ((alphaBoxHeight - total_box_length) / 2.0) + alphaBoxY
+    start_x_button = (WIDTH / 2 + (WIDTH / 2 - total_box_width) / 2) + alphaLetterBox
+    start_y_button = 100
     # Draw alphabet buttons
     for i in range(26):
         x = start_x_button + (i % 7) * (alphaLetterBox + alphaButtonGap)
@@ -178,7 +169,14 @@ while running:
         pygame.draw.rect(screen, BLACK, rect, border_radius=10)
         pygame.draw.rect(screen, WHITE, rect, 2, border_radius=10)
         letter = font_small.render(alphatbet[i], True, WHITE)
+        
+        text_width, text_height = letter.get_size()
+        # Center the letter in the box
+        x = rect.x + (alphaLetterBox - text_width) / 2
+        y = rect.y + (alphaLetterBox - text_height) / 2
+        # Draw the letter
         screen.blit(letter, (x, y))
+        
 
     # Draw wheel
     pygame.draw.circle(screen, BLACK, (wheelX, wheelY), wheelRadius)
