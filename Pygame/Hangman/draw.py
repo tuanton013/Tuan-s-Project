@@ -26,12 +26,9 @@ while not done:
     # Clear the screen and set the screen background
     screen.fill("white")
 
-
-
     # This draws a triangle using the polygon command
-    pygame.draw.polygon(screen, "black", ([100, 100], [200, 100],[150, 50], [100, 100]), 5)
-
-
+    pygame.draw.polygon(
+        screen, "black", ([100, 100], [200, 100], [150, 10], [250, 10]))
 
     # Go ahead and update the screen with what we've drawn.
     # This MUST happen after all the other drawing commands.
