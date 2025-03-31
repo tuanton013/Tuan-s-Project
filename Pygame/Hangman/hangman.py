@@ -6,7 +6,7 @@ import math
 pygame.init()
 
 # Screen dimensions
-WIDTH, HEIGHT = 900, 600
+WIDTH, HEIGHT = 1200, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Hangman")
 
@@ -15,6 +15,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREY = (128, 128, 128)
 GREEN = (0, 255, 0)
+RED = (255, 0, 0)
 
 # Clock for controlling the frame rate
 clock = pygame.time.Clock()
@@ -37,16 +38,16 @@ label_x = 200
 
 # Alphabet box
 alphatbet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-alphaBoxX = 700
-alphaBoxY = 20
+alphaBoxX = 800
+alphaBoxY = 80
 alphaBoxWidth = 150
 alphaBoxHeight = 200
 
 # Alphabet button
-alphaLetterBox = 20
-alphaButtonGap = 6
-total_box_width = 4 * alphaLetterBox + 3 * alphaButtonGap
-total_box_length = 7 * alphaLetterBox + 6 * alphaButtonGap
+alphaLetterBox = 50
+alphaButtonGap = 10
+total_box_width = 7 * alphaLetterBox + 6 * alphaButtonGap
+total_box_length = 4 * alphaLetterBox + 3 * alphaButtonGap
 alphabet_button = {}
 
 # wheel
@@ -68,6 +69,10 @@ spin_duration = 0
 
 font = pygame.font.SysFont("arial", 80)
 font_small = pygame.font.SysFont("arial", 20)
+
+# heart object
+heart_image = pygame.image.load("heart.png")
+heart_image = pygame.transform.scale(heart_image, (50, 50))
 
 # function to draw a circle with triangles
 
@@ -142,10 +147,10 @@ while running:
     screen.fill(GREY)
 
     # Calculate total width of all boxes and spaces
-    total_dashline_width = len(word) * wordBoxWidth + (len(word) - 1) * 15
+    total_box_width = len(word) * wordBoxWidth + (len(word) - 1) * 15
 
     # Calculate starting x-coordinate to center the boxes
-    start_x = (WIDTH - total_dashline_width) / 2.0
+    start_x = (WIDTH - total_box_width) / 2.0
 
     # Draw box for each letter in the word
     for box in word:
@@ -162,19 +167,16 @@ while running:
     text = font_small.render(" ".join(guessed), True, WHITE)
     screen.blit(text, (label_x + 100, 550))
 
-    # Draw alphabet box
-    pygame.draw.rect(screen, WHITE, (alphaBoxX, alphaBoxY,
-                     alphaBoxWidth, alphaBoxHeight))
-
     start_x_button = ((alphaBoxWidth - total_box_width) / 2.0) + alphaBoxX
     start_y_button = ((alphaBoxHeight - total_box_length) / 2.0) + alphaBoxY
     # Draw alphabet buttons
     for i in range(26):
-        x = start_x_button + (i % 4) * (alphaLetterBox + alphaButtonGap)
-        y = start_y_button + (i // 4) * (alphaLetterBox + alphaButtonGap)
+        x = start_x_button + (i % 7) * (alphaLetterBox + alphaButtonGap)
+        y = start_y_button + (i // 7) * (alphaLetterBox + alphaButtonGap)
         rect = pygame.Rect(x, y, alphaLetterBox, alphaLetterBox)
         alphabet_button[alphatbet[i]] = rect
-        pygame.draw.rect(screen, BLACK, rect)
+        pygame.draw.rect(screen, BLACK, rect, border_radius=10)
+        pygame.draw.rect(screen, WHITE, rect, 2, border_radius=10)
         letter = font_small.render(alphatbet[i], True, WHITE)
         screen.blit(letter, (x, y))
 
@@ -210,7 +212,13 @@ while running:
             # and update the game state accordingly.
             print("Spin finished")
 
-    # Update the display
+    # Draw the heart representing the chances left
+    heart_x = WIDTH/2 - (chances * heart_image.get_width()) / 2
+    heart_y = 50
+    for i in range(chances):
+        screen.blit(heart_image, (heart_x + i *
+                    heart_image.get_width(), heart_y))
+        # Update the display
     pygame.display.flip()
 
 
