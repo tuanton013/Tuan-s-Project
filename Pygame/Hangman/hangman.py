@@ -145,8 +145,68 @@ def draw_text_prize(surface, center_x, center_y, radius, num_lines, color, text)
         # Draw the text on the surface
         surface.blit(rotated_text, text_rect)
         
+# Function to draw word boxes
+def draw_word_boxes(screen, word, clicked_buttons, font, box_color, text_color, box_width, box_height, start_x, start_y):
+    for i, letter in enumerate(word):
+        x = start_x + i * (box_width + 15)  # Add spacing between boxes
+        y = start_y
+        rect = pygame.Rect(x, y, box_width, box_height)
+        pygame.draw.rect(screen, box_color, rect, border_radius=5)
+        pygame.draw.rect(screen, text_color, rect, 2, border_radius=5)
+
+        # If the letter has been guessed, display it
+        if letter in clicked_buttons:
+            text_surface = font.render(letter, True, text_color)
+            text_rect = text_surface.get_rect(center=rect.center)
+            screen.blit(text_surface, text_rect)
+
 # Main game loop
 running = True
+def show_remaining_lives(WIDTH, screen, chances, heart_image):
+    heart_x = WIDTH/2 - (chances * heart_image.get_width()) / 2
+    heart_y = 50
+    for i in range(chances):
+        screen.blit(heart_image, (heart_x + i *
+                    heart_image.get_width(), heart_y))
+
+def draw_alphabet_buttons(screen, WHITE, BLACK, GREY, clicked_buttons, alphabet, alphaLetterBox, alphaButtonGap, alphabet_button, font_small, start_x_button, start_y_button):
+    for i in range(26):
+        x = start_x_button + (i % 7) * (alphaLetterBox + alphaButtonGap)
+        y = start_y_button + (i // 7) * (alphaLetterBox + alphaButtonGap)
+        rect = pygame.Rect(x, y, alphaLetterBox, alphaLetterBox)
+        alphabet_button[alphabet[i]] = rect
+        
+        # check if the button has been clicked
+        if alphabet[i] in clicked_buttons:
+            transparent_surface = pygame.Surface(
+                            (alphaLetterBox, alphaLetterBox), pygame.SRCALPHA)
+
+            # Draw the button with transparency
+            pygame.draw.rect(transparent_surface, GREY, (0, 0,
+                            alphaLetterBox, alphaLetterBox), border_radius=10)
+            # Draw the letter inside the button
+            letter = font_small.render(alphabet[i], True, WHITE)
+            text_width, text_height = letter.get_size()
+            # Center the letter in the box
+            x = (alphaLetterBox - text_width) / 2
+            y = (alphaLetterBox - text_height) / 2
+            # Draw the letter
+            transparent_surface.blit(letter, (x, y))
+            # Draw the transparent surface on the screen
+            screen.blit(transparent_surface, (rect.x, rect.y))
+        else: 
+            pygame.draw.rect(screen, BLACK, rect, border_radius=10)
+            pygame.draw.rect(screen, WHITE, rect, 2, border_radius=10)
+        
+        # Draw the letter inside the button
+        letter = font_small.render(alphabet[i], True, WHITE)
+        text_width, text_height = letter.get_size()
+        # Center the letter in the box
+        x = rect.x + (alphaLetterBox - text_width) / 2
+        y = rect.y + (alphaLetterBox - text_height) / 2
+        # Draw the letter
+        screen.blit(letter, (x, y))
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -199,59 +259,13 @@ while running:
     start_x = (WIDTH - total_word_width) / 2.0
     start_y = 450
 
-    # Draw box for each letter in the word
-    for box in word:
-        pygame.draw.rect(screen, WHITE, (start_x, start_y,
-                         wordBoxWidth, wordBoxLength),border_radius=10)
-        if box in clicked_buttons:
-            text = font.render(box, True, BLACK)
-            text_box_width, text_box_height = text.get_size()
-            # Center the letter in the box
-            x_box = start_x + (wordBoxWidth - text_box_width) / 2
-            y_box = start_y + (wordBoxLength - text_box_height) / 2
-            screen.blit(text, (x_box, y_box))
-        start_x += wordBoxWidth + 20  # Move to the next box position
+    draw_word_boxes(screen, word, clicked_buttons, font, WHITE, BLACK, wordBoxWidth, wordBoxLength, start_x, start_y)
 
 
     start_x_button = (WIDTH / 2 + (WIDTH / 2 - total_box_width) / 2) + alphaLetterBox
     start_y_button = 100
     # Draw alphabet buttons
-    for i in range(26):
-        x = start_x_button + (i % 7) * (alphaLetterBox + alphaButtonGap)
-        y = start_y_button + (i // 7) * (alphaLetterBox + alphaButtonGap)
-        rect = pygame.Rect(x, y, alphaLetterBox, alphaLetterBox)
-        alphabet_button[alphabet[i]] = rect
-        
-        # check if the button has been clicked
-        if alphabet[i] in clicked_buttons:
-            transparent_surface = pygame.Surface(
-                            (alphaLetterBox, alphaLetterBox), pygame.SRCALPHA)
-
-            # Draw the button with transparency
-            pygame.draw.rect(transparent_surface, GREY, (0, 0,
-                            alphaLetterBox, alphaLetterBox), border_radius=10)
-            # Draw the letter inside the button
-            letter = font_small.render(alphabet[i], True, WHITE)
-            text_width, text_height = letter.get_size()
-            # Center the letter in the box
-            x = (alphaLetterBox - text_width) / 2
-            y = (alphaLetterBox - text_height) / 2
-            # Draw the letter
-            transparent_surface.blit(letter, (x, y))
-            # Draw the transparent surface on the screen
-            screen.blit(transparent_surface, (rect.x, rect.y))
-        else: 
-            pygame.draw.rect(screen, BLACK, rect, border_radius=10)
-            pygame.draw.rect(screen, WHITE, rect, 2, border_radius=10)
-        
-        # Draw the letter inside the button
-        letter = font_small.render(alphabet[i], True, WHITE)
-        text_width, text_height = letter.get_size()
-        # Center the letter in the box
-        x = rect.x + (alphaLetterBox - text_width) / 2
-        y = rect.y + (alphaLetterBox - text_height) / 2
-        # Draw the letter
-        screen.blit(letter, (x, y))
+    draw_alphabet_buttons(screen, WHITE, BLACK, GREY, clicked_buttons, alphabet, alphaLetterBox, alphaButtonGap, alphabet_button, font_small, start_x_button, start_y_button)
         
 
     # Draw wheel
@@ -288,12 +302,8 @@ while running:
             print("Spin finished")
 
     # Draw the heart representing the chances left
-    heart_x = WIDTH/2 - (chances * heart_image.get_width()) / 2
-    heart_y = 50
-    for i in range(chances):
-        screen.blit(heart_image, (heart_x + i *
-                    heart_image.get_width(), heart_y))
-        # Update the display
+    show_remaining_lives(WIDTH, screen, chances, heart_image)
+
         
     # Draw the lines to divide sections in the circle
     draw_lines_in_circle(screen, wheelX, wheelY, wheelRadius, 8, WHITE)
