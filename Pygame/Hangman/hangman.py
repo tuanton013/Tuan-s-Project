@@ -32,13 +32,16 @@ word = random.choice(words)
 clicked_buttons = []
 correct = 0
 flag = 0
-chances = 3
+chances = 5
 PI = 3.14
 
 label_x = 200
 
 # Alphabet letters
 alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+# prize words
+prize_words = ["Heart +1", "Letter +1", "Better Luck", "Hint +1", "Heart -1"]
 
 # Alphabet button
 alphaLetterBox = 50
@@ -48,16 +51,16 @@ total_box_length = 4 * alphaLetterBox + 3 * alphaButtonGap
 alphabet_button = {}
 
 # wheel
-wheelRadius = 100
-wheelX = 150
-wheelY = 150
+wheelRadius = 150
+wheelX = 180
+wheelY = 180
 
 rotation_angle = 0
 rotation_speed = 20
 
 # spinning wheel button
 spinButtonX = 100
-spinButtonY = 280
+spinButtonY = 350
 spinButtonWidth = 100
 spinButtonHeight = 50
 spinning = False
@@ -66,6 +69,7 @@ spin_duration = 0
 
 font = pygame.font.SysFont("arial", 80)
 font_small = pygame.font.SysFont("arial", 25)
+font_small_bold = pygame.font.SysFont("arial", 15, True)
 
 # heart object
 heart_image = pygame.image.load("heart.png")
@@ -73,9 +77,19 @@ heart_image = pygame.transform.scale(heart_image, (50, 50))
 
 # function to draw a circle with triangles
 
-
+def draw_lines_in_circle(surface, center_x, center_y, radius, num_lines, color):
+    angle_step = 360 / num_lines
+    for i in range(num_lines):
+        angle = angle_step * i
+        rad = math.radians(angle)
+        x = center_x + radius * math.cos(rad)
+        y = center_y - radius * math.sin(rad)
+        
+        # Draw the line from the center to the edge of the circle
+        pygame.draw.line(surface, color, (center_x, center_y), (x, y), 2)
+        
 def draw_top_right_quadrant(surface, center_x, center_y, radius, start_angle, end_angle, color):
-
+    
     start_angle = int(start_angle)
     end_angle = int(end_angle)
     # Define the points for the filled top-right quadrant
@@ -97,7 +111,40 @@ def draw_top_right_quadrant(surface, center_x, center_y, radius, start_angle, en
     # Draw the filled polygon
     pygame.draw.polygon(surface, color, points)
 
+def step_angle(total_deg_in_circle, num_lines):
+    # Generate angles from start_angle to end_angle with a step
+    angle = 360 / num_lines
+    return angle
 
+# draw text prize in each section of the wheel
+def draw_text_prize(surface, center_x, center_y, radius, num_lines, color, text):
+    # Adjust the angle to keep the text readable
+    track=0
+    step = step_angle(360,num_lines)
+    for i in range(int(step/2),360,int(step)):  # Loop through angles in 45-degree increments
+        angle = i
+        # Convert degrees to radians
+        radians = angle * (PI / 180)
+        
+        text_radius = radius * 0.70
+        
+        x = center_x + text_radius * math.cos(radians)
+        y = center_y + text_radius * math.sin(radians)
+        text_surface = font_small_bold.render(text[track], True, color)
+        track += 1
+        if track >= len(text):
+            track = 0
+        if angle > 90 and angle <= 270:
+            adjusted_angle = angle - 180  # Flip the text
+        else:
+            adjusted_angle = angle
+
+        # Rotate the text to match the angle of the line
+        rotated_text = pygame.transform.rotate(text_surface, -adjusted_angle)
+        text_rect = rotated_text.get_rect(center=(x, y))  # Center the text at the calculated position
+        # Draw the text on the surface
+        surface.blit(rotated_text, text_rect)
+        
 # Main game loop
 running = True
 while running:
@@ -234,9 +281,10 @@ while running:
         spin_duration -= clock.get_time() / 1000
         if spin_duration <= 0:
             spinning = False
-            # Here you can add logic to determine the result of the spin
-            # For example, you can check which section of the wheel was landed on
-            # and update the game state accordingly.
+            # determine the target section
+            target_section = round(
+                (rotation_angle % 360) / 45) % 8
+            rotation_angle = target_section * 45
             print("Spin finished")
 
     # Draw the heart representing the chances left
@@ -246,6 +294,11 @@ while running:
         screen.blit(heart_image, (heart_x + i *
                     heart_image.get_width(), heart_y))
         # Update the display
+        
+    # Draw the lines to divide sections in the circle
+    draw_lines_in_circle(screen, wheelX, wheelY, wheelRadius, 8, WHITE)
+    draw_text_prize(screen, wheelX, wheelY, wheelRadius,
+                    8, WHITE, prize_words)
     pygame.display.flip()
 
 
