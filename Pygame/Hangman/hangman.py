@@ -70,8 +70,8 @@ rotation_speed = 20
 # spinning wheel button
 spinButtonX = 100
 spinButtonY = 350
-spinButtonWidth = 100
-spinButtonHeight = 50
+spinButtonWidth = 80
+spinButtonHeight = 25
 spinning = False
 spin_start_time = 0
 spin_duration = 0
@@ -121,7 +121,7 @@ def color_triangle(surface, center_x, center_y, radius, start_angle, end_angle, 
 
 def draw_spinning_arrow(surface, center_x, center_y, radius, start_angle, end_angle, color):
     # Draw the small circle at the center of the big circle
-    small_circle_radius = radius * 0.20
+    small_circle_radius = radius * 0.15
     pygame.draw.circle(surface, color, (center_x, center_y),
                        small_circle_radius)
 
@@ -296,8 +296,8 @@ while running:
                 pygame.mixer.pause()
                 mouse_x, mouse_y = pygame.mouse.get_pos()
                 # Check if the mouse is within the spin button
-                if (spinButtonX <= mouse_x <= spinButtonX + spinButtonWidth and
-                        spinButtonY <= mouse_y <= spinButtonY + spinButtonHeight):
+                if (wheelX - spinButtonWidth/2 <= mouse_x <= wheelX + spinButtonWidth/2 and
+                        wheelY + wheelRadius + spinButtonHeight/2 <= mouse_y <= wheelY + wheelRadius + 1.5 * spinButtonHeight):
                     print("Spin button clicked")
                     # Spin the wheel
                     spinning = True
@@ -373,10 +373,12 @@ while running:
                        wheelRadius, draw_top_right=1)
 
     # Draw the spin button
-    pygame.draw.rect(screen, BLACK, (spinButtonX, spinButtonY,
+    pygame.draw.rect(screen, BLACK, (wheelX - spinButtonWidth/2, wheelY + wheelRadius + spinButtonHeight/2,
                      spinButtonWidth, spinButtonHeight), border_radius=10)
     spinButtonText = font_small.render("Spin", True, WHITE)
-    screen.blit(spinButtonText, (spinButtonX + 10, spinButtonY + 10))
+    spinButtonText_rect = spinButtonText.get_rect(
+        center=(wheelX, wheelY + wheelRadius + spinButtonHeight))
+    screen.blit(spinButtonText, spinButtonText_rect)
 
     # Draw the rotated quadrant
     pygame.draw.circle(screen, BLACK, (wheelX, wheelY), wheelRadius)
@@ -384,14 +386,15 @@ while running:
     draw_color_triangles(screen, RED, DARK_GREEN, ORANGE, PINK,
                          PURPLE, wheelRadius, wheelX, wheelY, color_triangle)
 
-    draw_spinning_arrow(screen, wheelX, wheelY, wheelRadius,
-                        rotation_angle, rotation_angle + 45, GREY)
     # Draw the heart representing the chances left
-
     show_remaining_lives(WIDTH, screen, chances, heart_image)
 
     # Draw the lines to divide sections in the circle
     draw_lines_in_circle(screen, wheelX, wheelY, wheelRadius, 8, WHITE)
+    # Draw the spinning arrow
+    draw_spinning_arrow(screen, wheelX, wheelY, wheelRadius,
+                        rotation_angle, rotation_angle + 45, GREY)
+    # Draw the text in each section of the wheel
     draw_text_prize(screen, wheelX, wheelY, wheelRadius,
                     8, WHITE, prize_words)
     pygame.display.flip()
