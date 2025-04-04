@@ -120,27 +120,35 @@ def color_triangle(surface, center_x, center_y, radius, start_angle, end_angle, 
 
 
 def draw_spinning_arrow(surface, center_x, center_y, radius, start_angle, end_angle, color):
+    # Draw the small circle at the center of the big circle
+    small_circle_radius = radius * 0.20
+    pygame.draw.circle(surface, color, (center_x, center_y),
+                       small_circle_radius)
 
-    start_angle = int(start_angle)
-    end_angle = int(end_angle)
-    # Define the points for the filled top-right quadrant
-    points = [(center_x, center_y)]  # Start at the center of the circle
+    # Calculate the position of the arrow tip
+    arrow_length = small_circle_radius * 2
+    # Convert start_angle to radians
+    arrow_angle_rad = math.radians(start_angle)
+    arrow_tip_x = center_x + arrow_length * math.cos(arrow_angle_rad)
+    arrow_tip_y = center_y - arrow_length * math.sin(arrow_angle_rad)
 
-    # Generate points along the arc from 0 to 90 degrees
-    for angle in range(start_angle, end_angle+1):  # Increment by 1 degree for smoothness
-        rad = math.radians(angle)
-        x = center_x + radius * math.cos(rad)
-        # Subtract because Pygame's y-axis is inverted
-        y = center_y - radius * math.sin(rad)
-        print(f"Angle: {angle}, X: {x}, Y: {y}")
-        points.append((x, y))
+    # Draw the arrow as a small triangle
+    arrow_base_length = small_circle_radius * 0.5
+    arrow_height = small_circle_radius/2
 
-    # Add the last point on the arc
-    points.append((center_x + radius * math.cos(rad),
-                  center_y - radius * math.sin(rad)))
+    # Calculate the base points of the triangle
+    base_point1_x = center_x - arrow_height * math.sin(arrow_angle_rad)
+    base_point1_y = center_y - arrow_height * math.cos(arrow_angle_rad)
 
-    # Draw the filled polygon
-    pygame.draw.polygon(surface, color, points)
+    base_point2_x = center_x + arrow_height * math.sin(arrow_angle_rad)
+    base_point2_y = center_y + arrow_height * math.cos(arrow_angle_rad)
+
+    # Draw the triangle
+    pygame.draw.polygon(surface, color, [
+        (arrow_tip_x, arrow_tip_y),
+        (base_point1_x, base_point1_y),
+        (base_point2_x, base_point2_y)
+    ])
 
 
 def step_angle(total_deg_in_circle, num_lines):
@@ -331,10 +339,6 @@ while running:
         spin_duration -= clock.get_time() / 1000
         if spin_duration <= 0:
             spinning = False
-            # determine the target section
-            target_section = round(
-                (rotation_angle % 360) / 45) % 8
-            rotation_angle = target_section * 45
             print("Spin finished")
 
     # Game logic here
