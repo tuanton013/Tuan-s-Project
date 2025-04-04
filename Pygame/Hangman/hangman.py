@@ -16,7 +16,13 @@ BLACK = (0, 0, 0)
 GREY = (128, 128, 128)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
+DARK_GREEN = (101, 167, 101)
 PASTEL_BLUE = (186, 225, 255)
+ORANGE = (255, 165, 0)
+PINK = (255, 192, 203)
+PURPLE = (128, 0, 128)
+TURQUOISE = (64, 224, 208)
+
 
 # Clock for controlling the frame rate
 clock = pygame.time.Clock()
@@ -93,7 +99,27 @@ def draw_lines_in_circle(surface, center_x, center_y, radius, num_lines, color):
         pygame.draw.line(surface, color, (center_x, center_y), (x, y), 2)
 
 
-def draw_top_right_quadrant(surface, center_x, center_y, radius, start_angle, end_angle, color):
+def color_triangle(surface, center_x, center_y, radius, start_angle, end_angle, color):
+    # Define the points for the triangle
+    points = [(center_x, center_y)]  # Start at the center of the circle
+
+    # Generate points along the arc from start_angle to end_angle
+    for angle in range(start_angle, end_angle+1):  # Increment by 1 degree for smoothness
+        rad = math.radians(angle)
+        x = center_x + radius * math.cos(rad)
+        # Subtract because Pygame's y-axis is inverted
+        y = center_y - radius * math.sin(rad)
+        points.append((x, y))
+
+    # Add the last point on the arc
+    points.append((center_x + radius * math.cos(rad),
+                  center_y - radius * math.sin(rad)))
+
+    # Draw the filled polygon
+    pygame.draw.polygon(surface, color, points)
+
+
+def draw_spinning_arrow(surface, center_x, center_y, radius, start_angle, end_angle, color):
 
     start_angle = int(start_angle)
     end_angle = int(end_angle)
@@ -233,6 +259,26 @@ def reset_game():
     chances = 5
 
 
+def draw_color_triangles(screen, RED, DARK_GREEN, ORANGE, PINK, PURPLE, wheelRadius, wheelX, wheelY, color_triangle):
+    fix_angle = 45
+    color_triangle(screen, wheelX, wheelY, wheelRadius,
+                   fix_angle + 45, fix_angle + 90, DARK_GREEN)
+    color_triangle(screen, wheelX, wheelY, wheelRadius,
+                   fix_angle + 90, fix_angle + 135, RED)
+    color_triangle(screen, wheelX, wheelY, wheelRadius,
+                   fix_angle-45, fix_angle, PINK)
+    color_triangle(screen, wheelX, wheelY, wheelRadius,
+                   fix_angle + 135, fix_angle + 180, PURPLE)
+    color_triangle(screen, wheelX, wheelY, wheelRadius,
+                   fix_angle + 180, fix_angle + 225, PINK)
+    color_triangle(screen, wheelX, wheelY, wheelRadius,
+                   fix_angle, fix_angle + 45, ORANGE)
+    color_triangle(screen, wheelX, wheelY, wheelRadius,
+                   fix_angle + 225, fix_angle + 270, ORANGE)
+    color_triangle(screen, wheelX, wheelY, wheelRadius,
+                   fix_angle + 270, fix_angle + 315, DARK_GREEN)
+
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -277,7 +323,7 @@ while running:
 
 # Spinning the wheel
     if (spinning):
-        draw_top_right_quadrant(
+        draw_spinning_arrow(
             screen, wheelX, wheelY, wheelRadius, rotation_angle, rotation_angle + 45, GREEN)
         rotation_angle = (rotation_angle + rotation_speed) % 360
         # Decrease the speed gradually
@@ -331,9 +377,11 @@ while running:
     # Draw the rotated quadrant
     pygame.draw.circle(screen, BLACK, (wheelX, wheelY), wheelRadius)
 
-    draw_top_right_quadrant(screen, wheelX, wheelY, wheelRadius,
-                            rotation_angle, rotation_angle + 45, GREEN)
+    draw_color_triangles(screen, RED, DARK_GREEN, ORANGE, PINK,
+                         PURPLE, wheelRadius, wheelX, wheelY, color_triangle)
 
+    draw_spinning_arrow(screen, wheelX, wheelY, wheelRadius,
+                        rotation_angle, rotation_angle + 45, GREY)
     # Draw the heart representing the chances left
 
     show_remaining_lives(WIDTH, screen, chances, heart_image)
