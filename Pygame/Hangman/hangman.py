@@ -6,7 +6,7 @@ import math
 pygame.init()
 
 # Screen dimensions
-WIDTH, HEIGHT = 1200, 600
+WIDTH, HEIGHT = 1200, 800
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Hangman")
 
@@ -50,7 +50,11 @@ label_x = 200
 alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 # prize words
-prize_words = ["Heart +1", "Letter +1", "Better Luck", "Hint +1", "Heart -1"]
+prize_words = ["Better Luck", "Letter +1",
+               "Heart +1", "Heart -1", "Hint +1",  "Better Luck", "Letter +1", "Heart +1"]
+# prize_words = ["0", "1",
+#                "2", "3", "4"]
+prize_words_index = [0, 1, 2, 3, 4, 0, 1, 2]
 
 # Alphabet button
 alphaLetterBox = 50
@@ -60,18 +64,14 @@ total_box_length = 4 * alphaLetterBox + 3 * alphaButtonGap
 alphabet_button = {}
 
 # wheel
-wheelRadius = 150
-wheelX = 180
-wheelY = 180
+wheelRadius = 200
+wheelX = 250
+wheelY = 230
 
 rotation_angle = 0
 rotation_speed = 20
 
 # spinning wheel button
-spinButtonX = 100
-spinButtonY = 350
-spinButtonWidth = 80
-spinButtonHeight = 25
 spinning = False
 spin_start_time = 0
 spin_duration = 0
@@ -150,8 +150,13 @@ def draw_spinning_arrow(surface, center_x, center_y, radius, start_angle, end_an
         (base_point2_x, base_point2_y)
     ])
 
+    # draw spin text in the middle of the wheel
+    spin_text = font_small.render("Spin", True, WHITE)
+    spin_text_rect = spin_text.get_rect(center=(center_x, center_y))
+    surface.blit(spin_text, spin_text_rect)
 
-def step_angle(total_deg_in_circle, num_lines):
+
+def step_angle(num_lines):
     # Generate angles from start_angle to end_angle with a step
     angle = 360 / num_lines
     return angle
@@ -159,26 +164,26 @@ def step_angle(total_deg_in_circle, num_lines):
 # draw text prize in each section of the wheel
 
 
-def draw_text_prize(surface, center_x, center_y, radius, num_lines, color, text):
+def draw_text_prize(surface, center_x, center_y, radius, num_lines, color, text, text_index):
     # Adjust the angle to keep the text readable
-    track = 0
-    step = step_angle(360, num_lines)
+    step = step_angle(num_lines)
     # Loop through angles in 45-degree increments
-    for i in range(int(step/2), 360, int(step)):
-        angle = i
+    for i in range(num_lines):
+        angle = -(i * step + step/2)  # Center the text in the section
         # Convert degrees to radians
-        radians = angle * (PI / 180)
+        radians = math.radians(angle)
 
         text_radius = radius * 0.70
 
         x = center_x + text_radius * math.cos(radians)
         y = center_y + text_radius * math.sin(radians)
-        text_surface = font_small_bold.render(text[track], True, color)
-        track += 1
-        if track >= len(text):
-            track = 0
-        if angle > 90 and angle <= 270:
-            adjusted_angle = angle - 180  # Flip the text
+
+        prize_word = text[text_index[i]]
+        text_surface = font_small_bold.render(
+            prize_word, True, color)
+
+        if 90 < abs(angle) < 270:
+            adjusted_angle = angle + 180   # Flip the text
         else:
             adjusted_angle = angle
 
@@ -199,7 +204,7 @@ def draw_word_boxes(screen, word, clicked_buttons, font, box_color, text_color, 
         pygame.draw.rect(screen, box_color, rect, border_radius=5)
         pygame.draw.rect(screen, text_color, rect, 2, border_radius=5)
 
-        # If the letter has been guessed, display it
+        # If the letter has been guessed, grey it out
         if letter in clicked_buttons:
             text_surface = font.render(letter, True, text_color)
             text_rect = text_surface.get_rect(center=rect.center)
@@ -287,6 +292,28 @@ def draw_color_triangles(screen, RED, DARK_GREEN, ORANGE, PINK, PURPLE, wheelRad
                    fix_angle + 270, fix_angle + 315, DARK_GREEN)
 
 
+def get_arrow_angle(rotation_angle, num_sections):
+    # Normalize the angle to be between 0 and 360 degrees
+    # Negate to handle clockwise rotation
+    normalized_angle = rotation_angle % 360
+
+    # Calculate the angle per section
+    section_angle = 360 / num_sections
+
+    # Determine the section the arrow is pointing to
+    section_index = int(normalized_angle // section_angle)
+
+    return section_index
+
+
+def open_one_letter(word, clicked_buttons):
+    # Open one letter in the word
+    for letter in word:
+        if letter not in clicked_buttons:
+            clicked_buttons.append(letter)
+            break
+
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -296,8 +323,8 @@ while running:
                 pygame.mixer.pause()
                 mouse_x, mouse_y = pygame.mouse.get_pos()
                 # Check if the mouse is within the spin button
-                if (wheelX - spinButtonWidth/2 <= mouse_x <= wheelX + spinButtonWidth/2 and
-                        wheelY + wheelRadius + spinButtonHeight/2 <= mouse_y <= wheelY + wheelRadius + 1.5 * spinButtonHeight):
+                if (wheelX - (wheelRadius*0.15) < mouse_x < wheelX + (wheelRadius*0.15) and
+                        wheelY - (wheelRadius*0.15) < mouse_y < wheelY + (wheelRadius*0.15)):
                     print("Spin button clicked")
                     # Spin the wheel
                     spinning = True
@@ -339,11 +366,26 @@ while running:
         spin_duration -= clock.get_time() / 1000
         if spin_duration <= 0:
             spinning = False
-            print("Spin finished")
+            section = get_arrow_angle(rotation_angle, 8)
 
-    # Game logic here
+            # prize logic here
+            if (prize_words[section] == "Better Luck"):
+                print("Better Luck")
+            if (prize_words[section] == "Letter +1"):
+                open_one_letter(word, clicked_buttons)
+                print("Letter +1")
+            if (prize_words[section] == "Heart +1"):
+                chances += 1
+                print("Heart +1")
+            if (prize_words[section] == "Heart -1"):
+                chances -= 1
+                print("Heart -1")
+            if (prize_words[section] == "Hint +1"):
+                print("Hint +1")
 
-    # Cap the frame rate
+                # Game logic here
+
+                # Cap the frame rate
     clock.tick(FPS)
 
     # Drawing code here
@@ -354,7 +396,8 @@ while running:
 
     # Calculate starting x-coordinate to center the boxes
     start_x = (WIDTH - total_word_width) / 2.0
-    start_y = 450
+    # start_y euqal to 20% of the screen height from the bottom
+    start_y = HEIGHT - (0.2 * HEIGHT) - wordBoxLength
 
     draw_word_boxes(screen, word, clicked_buttons, font, WHITE,
                     BLACK, wordBoxWidth, wordBoxLength, start_x, start_y)
@@ -373,12 +416,12 @@ while running:
                        wheelRadius, draw_top_right=1)
 
     # Draw the spin button
-    pygame.draw.rect(screen, BLACK, (wheelX - spinButtonWidth/2, wheelY + wheelRadius + spinButtonHeight/2,
-                     spinButtonWidth, spinButtonHeight), border_radius=10)
-    spinButtonText = font_small.render("Spin", True, WHITE)
-    spinButtonText_rect = spinButtonText.get_rect(
-        center=(wheelX, wheelY + wheelRadius + spinButtonHeight))
-    screen.blit(spinButtonText, spinButtonText_rect)
+    # pygame.draw.rect(screen, BLACK, (wheelX - spinButtonWidth/2, wheelY + wheelRadius + spinButtonHeight/2,
+    #                  spinButtonWidth, spinButtonHeight), border_radius=10)
+    # spinButtonText = font_small.render("Spin", True, WHITE)
+    # spinButtonText_rect = spinButtonText.get_rect(
+    #     center=(wheelX, wheelY + wheelRadius + spinButtonHeight))
+    # screen.blit(spinButtonText, spinButtonText_rect)
 
     # Draw the rotated quadrant
     pygame.draw.circle(screen, BLACK, (wheelX, wheelY), wheelRadius)
@@ -396,7 +439,8 @@ while running:
                         rotation_angle, rotation_angle + 45, GREY)
     # Draw the text in each section of the wheel
     draw_text_prize(screen, wheelX, wheelY, wheelRadius,
-                    8, WHITE, prize_words)
+                    8, WHITE, prize_words, prize_words_index)
+
     pygame.display.flip()
 
 
