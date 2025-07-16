@@ -57,23 +57,28 @@ while running:
 	screen.fill(GREEN)
 	screen.blit(background_image,(0,0))
 
-	# draw tube
-	tube1_rect = pygame.draw.rect(screen, BLUE,(tube1_x, 0, TUBE_WIDTH, tube1_height))
-	tube2_rect = pygame.draw.rect(screen, BLUE,(tube2_x, 0, TUBE_WIDTH, tube2_height))
-	tube3_rect =pygame.draw.rect(screen, BLUE,(tube3_x, 0, TUBE_WIDTH, tube3_height))
-
-	# tube1_rect = screen.blit(tube_image,(tube1_x, 0))
-	# tube2_rect = screen.blit(tube_image,(tube2_x, 0))
-	# tube3_rect = screen.blit(tube_image,(tube3_x, 0))
-	
 	# draw tube inverse
-	# tube1_rect_inverse = pygame.draw.rect(screen, BLUE,(tube1_x, TUBE_GAP + tube1_height, TUBE_WIDTH, HEIGHT - TUBE_GAP - tube1_height))
-	# tube2_rect_inverse = pygame.draw.rect(screen, BLUE,(tube2_x, TUBE_GAP + tube2_height, TUBE_WIDTH, HEIGHT - TUBE_GAP - tube2_height))
-	# tube3_rect_inverse = pygame.draw.rect(screen, BLUE,(tube3_x, TUBE_GAP + tube3_height, TUBE_WIDTH, HEIGHT - TUBE_GAP - tube3_height))
-
-	tube1_rect_inverse = screen.blit(tube_image,(tube1_x,TUBE_GAP + tube1_height))	
-	tube2_rect_inverse = screen.blit(tube_image,(tube2_x,TUBE_GAP + tube2_height))
-	tube3_rect_inverse = screen.blit(tube_image,(tube3_x,TUBE_GAP + tube3_height))
+	tube1_img = pygame.transform.flip(pygame.transform.scale(tube_image, (TUBE_WIDTH, tube1_height)), False, True)
+	tube2_img = pygame.transform.flip(pygame.transform.scale(tube_image, (TUBE_WIDTH, tube2_height)), False, True)
+	tube3_img = pygame.transform.flip(pygame.transform.scale(tube_image, (TUBE_WIDTH, tube3_height)), False, True)
+	tube1_rect = screen.blit(tube1_img, (tube1_x, 0))
+	tube2_rect = screen.blit(tube2_img, (tube2_x, 0))
+	tube3_rect = screen.blit(tube3_img, (tube3_x, 0))
+	
+ 
+	# draw tube
+	tube1_rect_inverse = screen.blit(
+		pygame.transform.scale(tube_image, (TUBE_WIDTH, HEIGHT - TUBE_GAP - tube1_height)),
+		(tube1_x, TUBE_GAP + tube1_height)
+	)
+	tube2_rect_inverse = screen.blit(
+		pygame.transform.scale(tube_image, (TUBE_WIDTH, HEIGHT - TUBE_GAP - tube2_height)),
+		(tube2_x, TUBE_GAP + tube2_height)
+	)
+	tube3_rect_inverse = screen.blit(
+		pygame.transform.scale(tube_image, (TUBE_WIDTH, HEIGHT - TUBE_GAP - tube3_height)),
+		(tube3_x, TUBE_GAP + tube3_height)
+	)
 
 
 	# draw bird
