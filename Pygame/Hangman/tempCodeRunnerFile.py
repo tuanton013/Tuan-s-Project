@@ -1,2 +1,2 @@
-
-    heart_y = 50
+pygame.draw.circle(surface, color, (center_x, center_y),
+                       small_circle_radius)
