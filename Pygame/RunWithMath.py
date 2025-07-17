@@ -33,6 +33,10 @@ wall_spawn_timer = 0
 wall_spawn_delay = 180  # Spawn a wall every 3 seconds at 60 FPS
 wall_color = (150, 75, 0)  # Brown color for walls
 
+# hints variables  
+hints = []  # List to store hints or messages
+
+
 # Game state
 game_state = "playing"  # "playing", "game_over"
 
@@ -61,39 +65,80 @@ def draw_background_pattern(surface, y_offset):
             pygame.draw.rect(surface, (60, 60, 60), (WIDTH - rect_x - 20, rect_y + 75, 20, 40))
 
 def create_wall():
-    """Create a new wall with a gap for the player to pass through"""
-    gap_size = 150  # Size of the gap
-    gap_position = random.randint(gap_size, WIDTH - gap_size)  # Random gap position
+    """Create a new wall with three rectangles and two gaps for the player to pass through"""
+    gap_size = int(square_size * 1.2)  # Size of each gap
     
-    # Create left wall segment
-    left_wall = {
-        'x': 0,
-        'y': -50,  # Start above screen
-        'width': gap_position - gap_size // 2,
-        'height': 50
-    }
+    # Calculate positions for 3 rectangles with 2 gaps between them
+    # [Rect1] [Gap1] [Rect2] [Gap2] [Rect3]
     
-    # Create right wall segment
-    right_wall = {
-        'x': gap_position + gap_size // 2,
-        'y': -50,  # Start above screen
-        'width': WIDTH - (gap_position + gap_size // 2),
-        'height': 50
-    }
+    # Calculate rectangle widths (equal width for all 3 rectangles)
+    rect_width = (WIDTH - 2 * gap_size) // 3
     
-    return [left_wall, right_wall]
+    # Rectangle 1: Left side (starts from 0)
+    rect1_start = 0
+    rect1_end = rect_width
+    
+    # Gap 1: Between rect1 and rect2
+    gap1_start = rect1_end
+    gap1_end = gap1_start + gap_size
+    
+    # Rectangle 2: Middle
+    rect2_start = gap1_end
+    rect2_end = rect2_start + rect_width
+    
+    # Gap 2: Between rect2 and rect3
+    gap2_start = rect2_end
+    gap2_end = gap2_start + gap_size
+    
+    # Rectangle 3: Right side (goes to the end)
+    rect3_start = gap2_end
+    rect3_end = WIDTH
+    
+    walls_segments = []
+    
+    # Create left rectangle
+    if rect1_end > rect1_start:
+        left_rect = {
+            'x': rect1_start,
+            'y': -50,  # Start above screen
+            'width': rect1_end - rect1_start,
+            'height': 50
+        }
+        walls_segments.append(left_rect)
+    
+    # Create middle rectangle
+    if rect2_end > rect2_start:
+        middle_rect = {
+            'x': rect2_start,
+            'y': -50,  # Start above screen
+            'width': rect2_end - rect2_start,
+            'height': 50
+        }
+        walls_segments.append(middle_rect)
+    
+    # Create right rectangle
+    if rect3_end > rect3_start:
+        right_rect = {
+            'x': rect3_start,
+            'y': -50,  # Start above screen
+            'width': rect3_end - rect3_start,
+            'height': 50
+        }
+        walls_segments.append(right_rect)
+    
+    return walls_segments
 
 def update_walls():
     """Update wall positions and remove walls that are off screen"""
     global walls
     
     # Move all walls down
-    for wall_pair in walls:
-        for wall in wall_pair:
+    for wall_segments in walls:
+        for wall in wall_segments:
             wall['y'] += scroll_speed
     
     # Remove walls that are completely off screen
-    walls = [wall_pair for wall_pair in walls if wall_pair[0]['y'] < HEIGHT + 100]
+    walls = [wall_segments for wall_segments in walls if wall_segments[0]['y'] < HEIGHT + 100]
 
 def draw_walls(surface):
     """Draw all walls on the screen"""
