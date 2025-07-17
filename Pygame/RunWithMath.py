@@ -7,7 +7,7 @@ import random
 pygame.init()
 
 # Set up display
-WIDTH, HEIGHT = 600, 1200
+WIDTH, HEIGHT = 600, 1050
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Pygame Template")
 
@@ -18,10 +18,10 @@ FPS = 60
 # Background scrolling variables
 bg_y1 = 0  # First background position
 bg_y2 = -HEIGHT  # Second background position (starts above screen)
-scroll_speed = 2  # Speed of scrolling (pixels per frame)
+scroll_speed = 5  # Speed of scrolling (pixels per frame)
 
 # Square player variables
-square_size = 100
+square_size = 80
 square_x = (WIDTH - square_size) // 2  # Start at center
 square_y = (HEIGHT - square_size) // 2  # Start at center
 square_speed = 5  # Speed of square movement
@@ -30,11 +30,14 @@ square_speed = 5  # Speed of square movement
 walls = []  # List to store wall objects
 wall_width = 80
 wall_spawn_timer = 0
-wall_spawn_delay = 180  # Spawn a wall every 3 seconds at 60 FPS
+wall_spawn_delay = 120  # Spawn a wall every 2 seconds at 60 FPS
 wall_color = (150, 75, 0)  # Brown color for walls
 
 # hints variables  
 hints = []  # List to store hints or messages
+
+# gaps
+gaps = []
 
 
 # Game state
@@ -66,7 +69,7 @@ def draw_background_pattern(surface, y_offset):
 
 def create_wall():
     """Create a new wall with three rectangles and two gaps for the player to pass through"""
-    gap_size = int(square_size * 1.2)  # Size of each gap
+    gap_size = int(square_size * 1.5)  # Size of each gap
     
     # Calculate positions for 3 rectangles with 2 gaps between them
     # [Rect1] [Gap1] [Rect2] [Gap2] [Rect3]
@@ -125,20 +128,47 @@ def create_wall():
             'height': 50
         }
         walls_segments.append(right_rect)
-    
+        
+    # create rectangle for first gap
+    if gap1_end > gap1_start:
+        gap1_rect = {
+            'x': gap1_start,
+            'y': -50,
+            'width': gap_size,
+            'height': 25
+        }
+        gaps.append(gap1_rect)
+        
+    # create rectangle for second gap
+    if gap2_end > gap2_start:
+        gap2_rect = {
+            'x': gap2_start,
+            'y': -50,
+            'width': gap_size,
+            'height': 25
+        }
+        gaps.append(gap2_rect)
+
     return walls_segments
 
 def update_walls():
     """Update wall positions and remove walls that are off screen"""
-    global walls
+    global walls, gaps
     
     # Move all walls down
     for wall_segments in walls:
         for wall in wall_segments:
             wall['y'] += scroll_speed
     
+    # Move all gaps down
+    for gap in gaps:
+        gap['y'] += scroll_speed
+    
     # Remove walls that are completely off screen
     walls = [wall_segments for wall_segments in walls if wall_segments[0]['y'] < HEIGHT + 100]
+    
+    # Remove gaps that are completely off screen
+    gaps = [gap for gap in gaps if gap['y'] < HEIGHT + 100]
 
 def draw_walls(surface):
     """Draw all walls on the screen"""
@@ -148,6 +178,13 @@ def draw_walls(surface):
                 pygame.draw.rect(surface, wall_color, (wall['x'], wall['y'], wall['width'], wall['height']))
                 # Add a darker border for better visibility
                 pygame.draw.rect(surface, (100, 50, 0), (wall['x'], wall['y'], wall['width'], wall['height']), 2)
+                
+    # Draw gaps
+    for gap in gaps:
+        if gap['width'] > 0:
+            pygame.draw.rect(surface, (30, 30, 30), (gap['x'], gap['y'], gap['width'], gap['height']))
+            # Add a lighter border for better visibility
+            pygame.draw.rect(surface, (200, 200, 200), (gap['x'], gap['y'], gap['width'], gap['height']), 2)
 
 def check_wall_collision(player_x, player_y, player_size):
     """Check if the player collides with any wall"""
@@ -176,10 +213,11 @@ def game_over():
     
 def reset_game():
     """Reset game state to initial values"""
-    global square_x, square_y, walls, bg_y1, bg_y2, wall_spawn_timer, game_state
+    global square_x, square_y, walls, gaps, bg_y1, bg_y2, wall_spawn_timer, game_state
     square_x = (WIDTH - square_size) // 2
     square_y = (HEIGHT - square_size) // 2
     walls.clear()
+    gaps.clear()
     bg_y1 = 0
     bg_y2 = -HEIGHT
     wall_spawn_timer = 0
@@ -234,13 +272,15 @@ while running:
             square_x += square_speed
         if keys[pygame.K_UP] or keys[pygame.K_w]:
             square_y -= square_speed
-        if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            square_y += square_speed
+        if (keys[pygame.K_DOWN] or keys[pygame.K_s]):
+            if square_y + square_size + square_speed <= HEIGHT:
+                square_y += square_speed
+            else:
+                square_y = HEIGHT - square_size
         
         # Keep square within screen boundaries
         square_x = max(0, min(square_x, WIDTH - square_size))
         square_y = max(0, min(square_y, HEIGHT - square_size))
-
         # Game logic goes here
         
         # Wall spawning logic
@@ -272,6 +312,12 @@ while running:
     # Drawing code goes here
     screen.fill((30, 30, 30))  # Fill the screen with a dark color
 
+    # Show mouse cursor position (x, y)
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+    font = pygame.font.Font(None, 28)
+    mouse_pos_text = font.render(f"Mouse: ({mouse_x}, {mouse_y})", True, (200, 200, 0))
+    screen.blit(mouse_pos_text, (WIDTH - 200, 10))
+    
     # Draw scrolling background pattern
     draw_background_pattern(screen, bg_y1)
     draw_background_pattern(screen, bg_y2)
