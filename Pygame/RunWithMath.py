@@ -2,6 +2,9 @@ import pygame
 import sys
 import math
 import random
+import sympy as sp
+from sympy import symbols, expand, factor, solve, simplify
+
 
 # Initialize Pygame
 pygame.init()
@@ -247,6 +250,28 @@ def user_choice():
         screen.blit(text, text_rect)
         pygame.display.flip()
         clock.tick(FPS)
+        
+def generate_simple_math_question():
+    # Choose two random integers
+    a = random.randint(1, 20)
+    b = random.randint(1, 20)
+    # Randomly choose an operation
+    operation = random.choice(['+', '-', '*', '/'])
+    if operation == '+':
+        question = f"{a} + {b} = ?"
+        answer = a + b
+    elif operation == '-':
+        question = f"{a} - {b} = ?"
+        answer = a - b
+    elif operation == '*':
+        question = f"{a} * {b} = ?"
+        answer = a * b
+    else:  # division, ensure no division by zero and integer result
+        # Make sure b divides a for integer division
+        a = a * b
+        question = f"{a} / {b} = ?"
+        answer = a // b
+    return question, answer
 
 # Main loop
 running = True

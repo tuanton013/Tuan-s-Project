@@ -1,3 +1,4 @@
+from operator import ge
 import sympy as sp
 from sympy import symbols, expand, factor, solve, simplify
 import random
@@ -14,6 +15,28 @@ def generate_algebra_question():
     solution = solve(equation, x)[0]
     
     return f"Solve for x: {a}x + {b} = {c}", solution
+
+def generate_simple_math_question():
+    # Choose two random integers
+    a = random.randint(1, 20)
+    b = random.randint(1, 20)
+    # Randomly choose an operation
+    operation = random.choice(['+', '-', '*', '/'])
+    if operation == '+':
+        question = f"{a} + {b} = ?"
+        answer = a + b
+    elif operation == '-':
+        question = f"{a} - {b} = ?"
+        answer = a - b
+    elif operation == '*':
+        question = f"{a} * {b} = ?"
+        answer = a * b
+    else:  # division, ensure no division by zero and integer result
+        # Make sure b divides a for integer division
+        a = a * b
+        question = f"{a} / {b} = ?"
+        answer = a // b
+    return question, answer
 
 # Quadratic equations
 def generate_quadratic():
@@ -43,6 +66,6 @@ def generate_expansion():
 
 
 print("Algebra Questions:")
-question, answer = generate_algebra_question()
+question, answer = generate_simple_math_question()
 print(question)
 print("Answer:", answer)
