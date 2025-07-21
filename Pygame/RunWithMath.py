@@ -135,7 +135,7 @@ def create_wall():
             'x': gap1_start,
             'y': -50,
             'width': gap_size,
-            'height': 25
+            'height': 25,
         }
         gaps.append(gap1_rect)
         
