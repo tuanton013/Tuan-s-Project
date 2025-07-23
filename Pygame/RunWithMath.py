@@ -152,37 +152,58 @@ def create_wall():
         }
         gaps.append(gap2_rect)
 
-    return walls_segments
+    # Generate a math question for this wall
+    question, answer = generate_simple_math_question()
+    
+    # Create wall data structure with text
+    wall_data = {
+        'segments': walls_segments,
+        'text': question,
+        'answer': answer,
+        'text_y': -80  # Position text above the wall initially
+    }
+    
+    return wall_data
 
 def update_walls():
     """Update wall positions and remove walls that are off screen"""
     global walls, gaps
     
     # Move all walls down
-    for wall_segments in walls:
-        for wall in wall_segments:
+    for wall_data in walls:
+        for wall in wall_data['segments']:
             wall['y'] += scroll_speed
+        # Move the text with the wall
+        wall_data['text_y'] += scroll_speed
     
     # Move all gaps down
     for gap in gaps:
         gap['y'] += scroll_speed
     
     # Remove walls that are completely off screen
-    walls = [wall_segments for wall_segments in walls if wall_segments[0]['y'] < HEIGHT + 100]
+    walls = [wall_data for wall_data in walls if wall_data['segments'][0]['y'] < HEIGHT + 100]
     
     # Remove gaps that are completely off screen
     gaps = [gap for gap in gaps if gap['y'] < HEIGHT + 100]
 
 def draw_walls(surface):
     """Draw all walls on the screen"""
-    for wall_pair in walls:
-        for wall in wall_pair:
+    for wall_data in walls:
+        # Draw wall segments
+        for wall in wall_data['segments']:
             if wall['width'] > 0:  # Only draw if wall has width
                 pygame.draw.rect(surface, wall_color, (wall['x'], wall['y'], wall['width'], wall['height']))
                 # Add a darker border for better visibility
                 pygame.draw.rect(surface, (100, 50, 0), (wall['x'], wall['y'], wall['width'], wall['height']), 2)
+        
+        # Draw text below the wall
+        if wall_data['text_y'] > -50 and wall_data['text_y'] < HEIGHT + 50:  # Only draw if visible
+            font = pygame.font.Font(None, 36)
+            text_surface = font.render(wall_data['text'], True, (255, 255, 255))
+            text_rect = text_surface.get_rect(center=(WIDTH // 2, wall_data['text_y']))
+            surface.blit(text_surface, text_rect)
                 
-    # Draw gaps
+    # Draw gaps with different colors based on type
     for gap in gaps:
         if gap['width'] > 0:
             pygame.draw.rect(surface, (30, 30, 30), (gap['x'], gap['y'], gap['width'], gap['height']))
@@ -193,8 +214,8 @@ def check_wall_collision(player_x, player_y, player_size):
     """Check if the player collides with any wall"""
     player_rect = pygame.Rect(player_x, player_y, player_size, player_size)
     
-    for wall_pair in walls:
-        for wall in wall_pair:
+    for wall_data in walls:
+        for wall in wall_data['segments']:
             if wall['width'] > 0:  # Only check collision if wall has width
                 wall_rect = pygame.Rect(wall['x'], wall['y'], wall['width'], wall['height'])
                 if player_rect.colliderect(wall_rect):
@@ -311,7 +332,8 @@ while running:
         # Wall spawning logic
         wall_spawn_timer += 1
         if wall_spawn_timer >= wall_spawn_delay:
-            walls.append(create_wall())
+            new_wall = create_wall()
+            walls.append(new_wall)
             wall_spawn_timer = 0
         
         # Update walls
